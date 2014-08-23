@@ -1,0 +1,8 @@
+{
+	"name": "simple-text-editor",
+	"main": "./html/index.html",
+	"window": {
+		"fullscreen": true
+	}
+}
+
