@@ -38,6 +38,14 @@ function Ship() {
 
   var origin = new Vec2(0, 0);
 
+  var deathShardLocs = [];
+  var deathShardVels = [];
+  var shardSpeed = 200;
+  for(var i = 0; i < 10; i++) {
+    deathShardLocs[i] = new Vec2(0, 0);
+    deathShardVels[i] = new Vec2(0, 0);
+  }
+
   function testSpiderCollision(spider, tick) {
     if(!( this.x + colRadius < spider.pos.x - spider.radius ||
             this.x - colRadius > spider.pos.x + spider.radius ||
@@ -211,7 +219,19 @@ function Ship() {
           this.dead = true;
           stuck = false;
           this.deadTime = now;
+
+          for(var i = 0; i < deathShardLocs.length; i++) {
+            deathShardLocs[i] = new Vec2(this.x, this.y);
+            deathShardVels[i] = new Vec2((Math.random() * shardSpeed) - (shardSpeed / 2), (Math.random() * shardSpeed) - (shardSpeed / 2));
+          }
         }
+      }
+    }
+
+    if(this.dead) {
+      for(var i = 0; i < deathShardLocs.length; i++) {
+        deathShardLocs[i].x += deathShardVels[i].x * tick;
+        deathShardLocs[i].y += deathShardVels[i].y * tick;
       }
     }
 
@@ -241,6 +261,11 @@ function Ship() {
   function render(context) {
     var now = Date.now();
     if(now - this.deadTime < 3000) {
+      context.fillStyle="#FFFF88";
+      for(var i = 0; i < deathShardLocs.length; i++) {
+        var loc = deathShardLocs[i];
+        context.fillRect(loc.x, loc.y, 10, 10)
+      }
       return;
     }
     if(now - this.deadTime < 6000 && (now % 500) < 250) {
