@@ -4,7 +4,7 @@ function Spider(startX, startY, img1, img2) {
 
   var targetPlanet = null;
   var prevPlanet = null;
-  var speed = 500;
+  var speed = 550;
   var colRadius = 25;
   this.radius = colRadius;
 

@@ -80,6 +80,8 @@ var bullets = [];
 var messages = ["", "", "", "", ""];
 var messageOffset = 0;
 
+var scoreFlashTime = 0;
+
 var stars = [];
 
 for(var i = 0; i < 100; i++) {
@@ -181,6 +183,7 @@ function upScore(amount, name) {
 		m+= " Thanks to you!";
 	}
 	messages.push(m);
+	scoreFlashTime = Date.now();
 }
 
 function render() {
@@ -198,7 +201,7 @@ function render() {
 
   var tick = dt / 1000;
 
-	if(planets.length < 100 || (newPlanetRequired && Date.now() > nextPlanetAddTime)) {
+	if(planets.length < 7 || (newPlanetRequired && Date.now() > nextPlanetAddTime)) {
 		var newPlanet = new Planet(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
 		planets.push(newPlanet);
 		nextPlanetAddTime += Math.random() * 5000;
@@ -290,12 +293,20 @@ function render() {
     context.fill();
   }
 
+  var scoreSize = 35;
+  var scoreOffset = 0;
+  var sinceFlash = Date.now() - scoreFlashTime
+  if(sinceFlash < 250) {
+  	scoreSize += Math.round(sinceFlash / 20);
+  	scoreOffset -= (sinceFlash / 40);
+  }
+
 	context.fillStyle="#FFFFFF";
 	context.strokeStyle="#000000";
 	context.lineWidth = 4;
-	context.font = 'italic 35pt sans-serif';
-	context.strokeText(""+ship.score, 105, 43);
-  context.fillText(""+ship.score, 105, 43);
+	context.font = "italic "+scoreSize+"pt sans-serif";
+	context.strokeText(""+ship.score, 105, 43-scoreOffset);
+  context.fillText(""+ship.score, 105, 43-scoreOffset);
 
   messageOffset = Math.max(0, messageOffset - (10 * messages.length * tick));
   if(messageOffset <= 0) {
