@@ -139,7 +139,7 @@ function render() {
 
   var tick = dt / 1000;
 
-	if(planets.length < 5 || (newPlanetRequired && Date.now() > nextPlanetAddTime)) {
+	if(planets.length < 7 || (newPlanetRequired && Date.now() > nextPlanetAddTime)) {
 		var newPlanet = new Planet(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
 		planets.push(newPlanet);
 		nextPlanetAddTime += Math.random() * 5000;

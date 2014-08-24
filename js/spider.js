@@ -61,12 +61,23 @@ function Spider(startX, startY, img1, img2) {
         prevPlanet = null;
     }
 
+    var adjSpeed = speed;
+
+    if(ship.stuck && !ship.dead) {
+      this.disp.set(ship.x, ship.y);
+      this.disp.sub(this.pos);
+      var dist = Math.abs(this.disp.mag());
+      this.disp.norm();
+
+      adjSpeed *= (Math.min(400, dist) / 400);
+    }
+
     
     var targetRotation = Math.atan2(this.disp.y, this.disp.x)-(Math.PI/2);
     rotation += Math.max(-tick*rotationSpeed, Math.min(tick*rotationSpeed, targetRotation - rotation));
     
 
-    this.pos.add(this.disp.x * tick * speed, this.disp.y * tick * speed);
+    this.pos.add(this.disp.x * tick * adjSpeed, this.disp.y * tick * adjSpeed);
   }
 
   function render(context) {

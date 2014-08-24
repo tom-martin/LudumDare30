@@ -28,7 +28,7 @@ function Ship() {
   var collided = false;
   var edgeColliding = false;
   var edgeCollidingStart = -1;
-  var stuck = false;
+  this.stuck = false;
   var stuckEdge = null;
 
   var planetIndex = 0;
@@ -128,9 +128,9 @@ function Ship() {
 
       var timeSince = (now - edgeCollidingStart);
       if(edgeCollidingStart != -1 && timeSince < 3000) {
-        stuck = true;
+        this.stuck = true;
       } else if(timeSince < 6000) {
-        stuck = false;
+        this.stuck = false;
         stuckEdge = null;
       } else {
         edgeCollidingStart = -1;
@@ -178,9 +178,9 @@ function Ship() {
       }
       this.rotation += Math.max(-tick*rotationSpeed, Math.min(tick*rotationSpeed, rotationD));
 
-      if(stuck) {
-        this.x += movementVec.x * tick*speed * 0.1;
-        this.y += movementVec.y * tick*speed * 0.1;
+      if(this.stuck) {
+        this.x += movementVec.x * tick*speed * 0.4;
+        this.y += movementVec.y * tick*speed * 0.4;
 
         var diff1 = new Vec2(this.x, this.y)
         diff1.sub(stuckEdge.planet1.pos).norm();
@@ -222,7 +222,7 @@ function Ship() {
           if(this.testSpiderCollision(spider, tick)) {
             this.dead = true;
             this.lives --;
-            stuck = false;
+            this.stuck = false;
             this.deadTime = now;
 
             for(var i = 0; i < deathShardLocs.length; i++) {
@@ -241,7 +241,7 @@ function Ship() {
       }
 
       var fireFreq = maxFireFreq / spiders.length;
-      if(!stuck && !recentlyDead && input.spacedown && now - lastFireTime > fireFreq) {
+      if(!this.stuck && !recentlyDead && input.spacedown && now - lastFireTime > fireFreq) {
         var m = new Vec2(0, -1).rotate(this.rotation);
         addBullet(new Bullet(this.x, this.y, m));
         lastFireTime = now;
@@ -292,7 +292,7 @@ function Ship() {
 
     var jitterX = 0;
     var jitterY = 0;
-    if(stuck) {
+    if(this.stuck) {
       jitterX += (Math.random() * 4)- 2
       jitterY += (Math.random() * 4)- 2
     }
