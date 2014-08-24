@@ -1,4 +1,4 @@
-var fs = require('fs');
+//  var fs = require('fs');
 
 function zeroPad(num, places) {
   var zero = places - num.toString().length + 1;
@@ -120,6 +120,10 @@ grd2.addColorStop(0,"#C0C0C0");
 grd2.addColorStop(0.5,"#DDDDDD");
 grd2.addColorStop(1,"#C0C0C0");
 
+function upScore(amount) {
+	ship.score += amount;
+}
+
 function render() {
 	frameIndex ++;
 
@@ -153,7 +157,7 @@ function render() {
 	}
 
 	for(var i = 0; i < planets.length; i++) {
-  	planets[i].update(tick, planets, 0, 0);
+  	planets[i].update(tick, planets, 0, 0, upScore);
   }
 
   for(var i = 0; i < spiders.length; i++) {
@@ -205,6 +209,27 @@ function render() {
   context.beginPath();
   context.arc(0, 0, 1000, 0, 2 * Math.PI);
   context.stroke();
+
+  context.translate(ship.x - canvas.width / 2, ship.y - canvas.height / 2);	
+  context.fillStyle="#111111";
+  for(var i = 0; i < ship.lives; i++) {
+  	context.fillRect(17 + (i * 30), 17, 26, 26);
+  	context.beginPath();
+    context.arc(30 + (i *30), 20, 13, 13, 0,2*Math.PI);
+    context.fill();
+  }
+
+  context.fillStyle="#FFFF88";
+  for(var i = 0; i < ship.lives; i++) {
+  	context.fillRect(20 + (i * 30), 20, 20, 20);
+  	context.beginPath();
+    context.arc(30 + (i * 30), 20, 10, 10, 0,2*Math.PI);
+    context.fill();
+  }
+
+	context.fillStyle="#FFFFFF";
+	context.font = 'italic 35pt sans-serif';
+  context.fillText(""+ship.score, 105, 43);;
 
 
   if(startCap && frameIndex % 3 == 0) {

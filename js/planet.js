@@ -13,7 +13,7 @@ function Planet(startX, startY) {
 
   this.hadAnEdge = false;
 
-  this.radius = 10 + (Math.random() * 40);
+  this.radius = 10 + Math.round((Math.random() * 40));
   var origin = new Vec2(0, 0);
 
   var r = Math.floor((100 + Math.random()*156)).toString(16);
@@ -22,7 +22,7 @@ function Planet(startX, startY) {
 
   var c = "#"+r+g+b;
 
-  function update(tick, planets, centerX, centerY) {
+  function update(tick, planets, centerX, centerY, upScore) {
     this.disp.set(0, 0);
 
     // Push away from other planets
@@ -77,6 +77,7 @@ function Planet(startX, startY) {
     this.pos.add(this.disp.x * tick, this.disp.y * tick);
 
     if(Math.abs(this.pos.distSq(origin)) > 4000000) {
+      upScore(this.radius);
       this.hadAnEdge = false;
       this.healthyEdges = 0;
       this.pos.set(startX, startY);
@@ -87,7 +88,7 @@ function Planet(startX, startY) {
 
       c = "#"+r+g+b;
       
-      this.radius = 10 + (Math.random() * 40);
+      this.radius = 10 + Math.round((Math.random() * 40));
     }
   }
 

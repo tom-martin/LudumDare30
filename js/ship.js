@@ -8,9 +8,10 @@ function Ship() {
   this.x = 0;
   this.y = 0;
 
-  this.lives = 5;
+  this.lives = 3;
   this.dead = false;
   this.deadTime = 0;
+  this.score = 0;
 
   this.pos = new Vec2(this.x, this.y);
 
@@ -104,163 +105,169 @@ function Ship() {
   function update(tick, input, planets, edges, addBullet, spiders) {
     var now = Date.now();
     var recentlyDead = (now - this.deadTime < 6000);
+    var stillDying = (now - this.deadTime < 3000);
 
-    edgeColliding = false;
-    if(!recentlyDead) {
-      for(var i = 0; i < edges.length; i++) {
-        var edge = edges[i];
-        if(edge.health > 0) {
-          if(this.testEdgeCollision(edge, tick)) {
-            edgeColliding = true;
-            if(edgeCollidingStart == -1) {
-              stuckEdge = edge;
-              edgeCollidingStart = now;
+    if(ship.lives > 0 || stillDying) {
+
+      edgeColliding = false;
+      if(!recentlyDead) {
+        for(var i = 0; i < edges.length; i++) {
+          var edge = edges[i];
+          if(edge.health > 0) {
+            if(this.testEdgeCollision(edge, tick)) {
+              edgeColliding = true;
+              if(edgeCollidingStart == -1) {
+                stuckEdge = edge;
+                edgeCollidingStart = now;
+              }
+              break;
             }
-            break;
           }
         }
       }
-    }
 
-    var timeSince = (now - edgeCollidingStart);
-    if(edgeCollidingStart != -1 && timeSince < 3000) {
-      stuck = true;
-    } else if(timeSince < 6000) {
-      stuck = false;
-      stuckEdge = null;
-    } else {
-      edgeCollidingStart = -1;
-    }
-
-    movementVec.set(0, 0);
-
-    if(!this.dead) {
-      if(input.rightdown) {
-        movementVec.x = 1;
+      var timeSince = (now - edgeCollidingStart);
+      if(edgeCollidingStart != -1 && timeSince < 3000) {
+        stuck = true;
+      } else if(timeSince < 6000) {
+        stuck = false;
+        stuckEdge = null;
+      } else {
+        edgeCollidingStart = -1;
       }
 
-      if(input.leftdown) {
-        movementVec.x = -1;
+      movementVec.set(0, 0);
+
+      if(!this.dead) {
+        if(input.rightdown) {
+          movementVec.x = 1;
+        }
+
+        if(input.leftdown) {
+          movementVec.x = -1;
+        }
+
+        if(input.downdown) {
+          movementVec.y = 1;
+        }
+
+        if(input.updown) {
+          movementVec.y = -1;
+        }
+        
+        movementVec.norm();
+
+        if(input.rightdown || input.leftdown || input.updown || input.downdown) {
+          previousVec.set(movementVec);
+        }
       }
 
-      if(input.downdown) {
-        movementVec.y = 1;
+      var targetRotation = Math.atan2(previousVec.y, previousVec.x)+(Math.PI/2);
+      this.rotation = this.rotation % (Math.PI * 2);
+      var rotationDA = targetRotation - this.rotation;
+      var rotationDB =  targetRotation - ((Math.PI * 2) +this.rotation);
+      var rotationDC =  targetRotation - (this.rotation - (Math.PI * 2) );
+      var rotationD = rotationDA;
+      if(Math.abs(rotationDB) < Math.abs(rotationD)) {
+        rotationD = rotationDB;
+        this.rotation += (Math.PI * 2);
+      }
+      if(Math.abs(rotationDC) < Math.abs(rotationD)) {
+        rotationD = rotationDC;
+        this.rotation -= (Math.PI * 2);
+      }
+      this.rotation += Math.max(-tick*rotationSpeed, Math.min(tick*rotationSpeed, rotationD));
+
+      if(stuck) {
+        this.x += movementVec.x * tick*speed * 0.1;
+        this.y += movementVec.y * tick*speed * 0.1;
+
+        var diff1 = new Vec2(this.x, this.y)
+        diff1.sub(stuckEdge.planet1.pos).norm();
+
+        var diff2 = new Vec2(this.x, this.y);
+        diff2.sub(stuckEdge.planet2.pos).norm();
+
+        this.x -= (diff1.x * tick * maxStuckSpeed);
+        this.x -= (diff2.x * tick * maxStuckSpeed);
+        this.y -= (diff1.y * tick * maxStuckSpeed);
+        this.y -= (diff2.y * tick * maxStuckSpeed);
+      } else {
+        this.x += movementVec.x * tick*speed;
+        this.y += movementVec.y * tick*speed;
       }
 
-      if(input.updown) {
-        movementVec.y = -1;
-      }
-      
-      movementVec.norm();
-
-      if(input.rightdown || input.leftdown || input.updown || input.downdown) {
-        previousVec.set(movementVec);
-      }
-    }
-
-    var targetRotation = Math.atan2(previousVec.y, previousVec.x)+(Math.PI/2);
-    this.rotation = this.rotation % (Math.PI * 2);
-    var rotationDA = targetRotation - this.rotation;
-    var rotationDB =  targetRotation - ((Math.PI * 2) +this.rotation);
-    var rotationDC =  targetRotation - (this.rotation - (Math.PI * 2) );
-    var rotationD = rotationDA;
-    if(Math.abs(rotationDB) < Math.abs(rotationD)) {
-      rotationD = rotationDB;
-      this.rotation += (Math.PI * 2);
-    }
-    if(Math.abs(rotationDC) < Math.abs(rotationD)) {
-      rotationD = rotationDC;
-      this.rotation -= (Math.PI * 2);
-    }
-    this.rotation += Math.max(-tick*rotationSpeed, Math.min(tick*rotationSpeed, rotationD));
-
-    if(stuck) {
-      this.x += movementVec.x * tick*speed * 0.1;
-      this.y += movementVec.y * tick*speed * 0.1;
-
-      var diff1 = new Vec2(this.x, this.y)
-      diff1.sub(stuckEdge.planet1.pos).norm();
-
-      var diff2 = new Vec2(this.x, this.y);
-      diff2.sub(stuckEdge.planet2.pos).norm();
-
-      this.x -= (diff1.x * tick * maxStuckSpeed);
-      this.x -= (diff2.x * tick * maxStuckSpeed);
-      this.y -= (diff1.y * tick * maxStuckSpeed);
-      this.y -= (diff2.y * tick * maxStuckSpeed);
-    } else {
-      this.x += movementVec.x * tick*speed;
-      this.y += movementVec.y * tick*speed;
-    }
-
-    if(now - this.deadTime > 6000) {
-      collided = false;
-      if(collidedPlanet && this.testPlanetCollision(collidedPlanet, tick)) {
-        collided = true;
-        collidedPlanet = collidedPlanet; 
-      }
-
-      for(var i = 0; i < Math.min(planets.length, 50); i++) {
-        var planet = planets[planetIndex];
-        if(this.testPlanetCollision(planet, tick)) {
+      if(now - this.deadTime > 6000) {
+        collided = false;
+        if(collidedPlanet && this.testPlanetCollision(collidedPlanet, tick)) {
           collided = true;
-          collidedPlanet = planet;
+          collidedPlanet = collidedPlanet; 
         }
 
-        planetIndex += 1;
-        if(planetIndex >= planets.length) {
-          planetIndex = 0;
+        for(var i = 0; i < Math.min(planets.length, 50); i++) {
+          var planet = planets[planetIndex];
+          if(this.testPlanetCollision(planet, tick)) {
+            collided = true;
+            collidedPlanet = planet;
+          }
+
+          planetIndex += 1;
+          if(planetIndex >= planets.length) {
+            planetIndex = 0;
+          }
         }
-      }
 
-      for(var i = 0; i < spiders.length; i++) {
-        var spider = spiders[i];
-        if(this.testSpiderCollision(spider, tick)) {
-          this.dead = true;
-          stuck = false;
-          this.deadTime = now;
+        for(var i = 0; i < spiders.length; i++) {
+          var spider = spiders[i];
+          if(this.testSpiderCollision(spider, tick)) {
+            this.dead = true;
+            this.lives --;
+            stuck = false;
+            this.deadTime = now;
 
-          for(var i = 0; i < deathShardLocs.length; i++) {
-            deathShardLocs[i] = new Vec2(this.x, this.y);
-            deathShardVels[i] = new Vec2((Math.random() * shardSpeed) - (shardSpeed / 2), (Math.random() * shardSpeed) - (shardSpeed / 2));
+            for(var i = 0; i < deathShardLocs.length; i++) {
+              deathShardLocs[i] = new Vec2(this.x, this.y);
+              deathShardVels[i] = new Vec2((Math.random() * shardSpeed) - (shardSpeed / 2), (Math.random() * shardSpeed) - (shardSpeed / 2));
+            }
           }
         }
       }
-    }
 
-    if(this.dead) {
-      for(var i = 0; i < deathShardLocs.length; i++) {
-        deathShardLocs[i].x += deathShardVels[i].x * tick;
-        deathShardLocs[i].y += deathShardVels[i].y * tick;
+      if(this.dead) {
+        for(var i = 0; i < deathShardLocs.length; i++) {
+          deathShardLocs[i].x += deathShardVels[i].x * tick;
+          deathShardLocs[i].y += deathShardVels[i].y * tick;
+        }
       }
-    }
 
-    var fireFreq = maxFireFreq / spiders.length;
-    if(!stuck && !recentlyDead && input.spacedown && now - lastFireTime > fireFreq) {
-      var m = new Vec2(0, -1).rotate(this.rotation);
-      addBullet(new Bullet(this.x, this.y, m));
-      lastFireTime = now;
-    }
+      var fireFreq = maxFireFreq / spiders.length;
+      if(!stuck && !recentlyDead && input.spacedown && now - lastFireTime > fireFreq) {
+        var m = new Vec2(0, -1).rotate(this.rotation);
+        addBullet(new Bullet(this.x, this.y, m));
+        lastFireTime = now;
+      }
 
-    this.pos.set(this.x, this.y);
-    if(Math.abs(this.pos.distSq(origin)) > 1000000) {
-      origin.sub(this.pos);
-      origin.norm();
+      this.pos.set(this.x, this.y);
+      if(Math.abs(this.pos.distSq(origin)) > 1000000) {
+        origin.sub(this.pos);
+        origin.norm();
 
-      this.x += origin.x * tick * (speed * 2);
-      this.y += origin.y * tick * (speed * 2);
+        this.x += origin.x * tick * (speed * 2);
+        this.y += origin.y * tick * (speed * 2);
 
-      origin.set(0, 0);
-    }
+        origin.set(0, 0);
+      }
 
-    if(now - this.deadTime > 3000) {
-      this.dead = false;
+      if(now - this.deadTime > 3000) {
+        this.dead = false;
+      }
     }
   }
 
   function render(context) {
     var now = Date.now();
-    if(now - this.deadTime < 3000) {
+    var deadLength = now - this.deadTime;
+    if(deadLength < 3000) {
       context.fillStyle="#FFFF88";
       for(var i = 0; i < deathShardLocs.length; i++) {
         var loc = deathShardLocs[i];
@@ -268,9 +275,13 @@ function Ship() {
       }
       return;
     }
+    if(this.lives <= 0) {
+      return;
+    }
     if(now - this.deadTime < 6000 && (now % 500) < 250) {
       return;
     }
+
     if(stuckEdge != null) {
       stuckEdge.drawBetween(new Vec2(this.x, this.y), colRadius, stuckEdge.planet1.pos, stuckEdge.planet1.radius);
       stuckEdge.drawBetween(new Vec2(this.x, this.y), colRadius, stuckEdge.planet2.pos, stuckEdge.planet2.radius);
