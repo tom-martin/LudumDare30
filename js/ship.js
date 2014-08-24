@@ -8,6 +8,9 @@ function Ship() {
   this.x = 0;
   this.y = 0;
 
+  var k2 = 170;
+  var maxStuckSpeed =75;
+
   var momentumX = 0;
   var momentumY = 0;
 
@@ -16,6 +19,10 @@ function Ship() {
 
   var colRadius = 15;
   var collided = false;
+  var edgeColliding = false;
+  var edgeCollidingStart = -1;
+  var stuck = false;
+  var stuckEdge = null;
 
   var planetIndex = 0;
   var collidedPlanet = null;
@@ -38,32 +45,47 @@ function Ship() {
   }
 
 
-  function testEdgeCollision(edge, tick) {
-    // Transform to local coordinates
-    var localP1 = new Vec2(edge.planet1.pos).sub(this.x, this.y);
-    // var LocalP2 = LineP2 – CircleCentre;
-    // // Precalculate this value. We use it often
-    // P2MinusP1 = LocalP2 – LocalP1 
+  // function testEdgeCollision(edge, tick) {
+  //   // Transform to local coordinates
+  //   var localP1 = new Vec2(edge.planet1.pos).sub(this.x, this.y);
+  //   var localP2 = new Vec2(edge.planet2.pos).sub(this.x, this.y);
+  //   // // Precalculate this value. We use it often
+  //   var p2MinusP1 = localP2.clone().sub(localP1);
+  
+  //   var a = (p2MinusP1.x) * (p2MinusP1.x) + (p2MinusP1.y) * (p2MinusP1.y);
+  //   var b = 2 * ((p2MinusP1.x *localP1.x) + (p2MinusP1.y * localP1.y));
+  //   var c = (localP1.x * localP1.x) + (localP1.y * localP1.y) - (colRadius * colRadius);
+  //   var delta = b * b - (4 * a * c);
+  //   if (delta < 0) {
+  //     return false;
+  //   } else {
+  //     return true;
+  //   }
+  // }
 
-    // a = (P2MinusP1.X) * (P2MinusP1.X) + (P2MinusP1.Y) * (P2MinusP1.Y)
-    // b = 2 * ((P2MinusP1.X * LocalP1.X) + (P2MinusP1.Y * LocalP1.Y))
-    // c = (LocalP1.X * LocalP1.X) + (LocalP1.Y * LocalP1.Y) – (Radius * Radius)
-    // delta = b * b – (4 * a * c)
-    // if (delta < 0) // No intersection
-    //   return null;
-    // else if (delta == 0) // One intersection
-    //   u = -b / (2 * a)
-    //   return LineP1 + (u * P2MinusP1)
-    //   /* Use LineP1 instead of LocalP1 because we want our answer in global
-    //      space, not the circle's local space */
-    // else if (delta > 0) // Two intersections
-    //   SquareRootDelta = sqrt(delta)
-
-    //   u1 = (-b + SquareRootDelta) / (2 * a)
-    //   u2 = (-b - SquareRootDelta) / (2 * a)
-
-    //   return { LineP1 + (u1 * P2MinusP1) ; LineP1 + (u2 * P2MinusP1)}
+  function closestPoint(x, y, edge) {
+    var seg_v = new Vec2(edge.planet2.pos).sub(edge.planet1.pos);
+    var seg_v_mag = seg_v.mag();
+    var pt_v = new Vec2(x, y).sub(edge.planet1.pos);
+    
+    seg_v.norm();
+    var proj = pt_v.dot(seg_v);
+    if (proj <= 0) {
+      return edge.planet1.pos.clone();
+    }
+    if(proj >= seg_v_mag) {
+      return edge.planet1.pos.clone();
+    }
+        
+    return seg_v.scale(proj).add(edge.planet1.pos);
   }
+
+ function testEdgeCollision(edge, tick) {
+    var closest = closestPoint(this.x, this.y, edge);
+    var dist_v = new Vec2(this.x, this.y).sub(closest);
+    return dist_v.mag() < colRadius;
+  }
+
 
   function update(tick, input, planets, edges) {
     // var damp = Math.min(0.99, (20 * tick));
@@ -94,7 +116,31 @@ function Ship() {
     // this.x += (tick * momentumX);
     // this.y -= (tick * momentumY);
 
+    edgeColliding = false;
+    for(var i = 0; i < edges.length; i++) {
+      var edge = edges[i];
+      if(this.testEdgeCollision(edge, tick)) {
+        edgeColliding = true;
+        if(edgeCollidingStart == -1) {
+          stuckEdge = edge;
+          edgeCollidingStart = Date.now();
+        }
+        break;
+      }
+    }
+
+    var timeSince = (Date.now() - edgeCollidingStart);
+    if(edgeCollidingStart != -1 && timeSince < 3000) {
+      stuck = true;
+    } else if(timeSince < 6000) {
+      stuck = false;
+      stuckEdge = null;
+    } else {
+      edgeCollidingStart = -1;
+    }
+
     movementVec.set(0, 0);
+
     if(input.rightdown) {
       movementVec.x = 1;
     }
@@ -110,6 +156,7 @@ function Ship() {
     if(input.updown) {
       movementVec.y = -1;
     }
+    
     movementVec.norm();
 
     if(input.rightdown || input.leftdown || input.updown || input.downdown) {
@@ -132,8 +179,24 @@ function Ship() {
     }
     this.rotation += Math.max(-tick*rotationSpeed, Math.min(tick*rotationSpeed, rotationD));
 
-    this.x += movementVec.x * tick*speed;
-    this.y += movementVec.y * tick*speed;
+    if(stuck) {
+      this.x += movementVec.x * tick*speed * 0.1;
+      this.y += movementVec.y * tick*speed * 0.1;
+
+      var diff1 = new Vec2(this.x, this.y)
+      diff1.sub(stuckEdge.planet1.pos).norm();
+
+      var diff2 = new Vec2(this.x, this.y);
+      diff2.sub(stuckEdge.planet2.pos).norm();
+
+      this.x -= (diff1.x * tick * maxStuckSpeed);
+      this.x -= (diff2.x * tick * maxStuckSpeed);
+      this.y -= (diff1.y * tick * maxStuckSpeed);
+      this.y -= (diff2.y * tick * maxStuckSpeed);
+    } else {
+      this.x += movementVec.x * tick*speed;
+      this.y += movementVec.y * tick*speed;
+    }
 
     collided = false;
     if(collidedPlanet && this.testPlanetCollision(collidedPlanet, tick)) {
@@ -153,25 +216,31 @@ function Ship() {
         planetIndex = 0;
       }
     }
-
-    for(var i = 0; i < edges.length; i++) {
-      var edge = edges[i];
-      this.testEdgeCollision(edge, tick);
-    }
   }
 
   function render(context) {
+    if(stuckEdge != null) {
+      stuckEdge.drawBetween(new Vec2(this.x, this.y), stuckEdge.planet1.pos);
+      stuckEdge.drawBetween(new Vec2(this.x, this.y), stuckEdge.planet2.pos);
+    }
     if(collided) {
       context.fillStyle="#FFAAAA";
     } else {
-      context.fillStyle="#EEEEEE";
+      context.fillStyle="#FFFFAA";
     }
+
+    var jitterX = 0;
+    var jitterY = 0;
+    if(stuck) {
+      jitterX += (Math.random() * 4)- 2
+      jitterY += (Math.random() * 4)- 2
+    }
+
     context.translate(this.x, this.y);
     context.rotate(this.rotation);
-    context.fillRect(-10, -10, 20, 20);
-    context.fillRect(-10, -10, 20, 20);
+    context.fillRect(jitterX-10, jitterY-10, 20, 20);
     context.beginPath();
-    context.arc(0,-10,10,0,2*Math.PI);
+    context.arc(jitterX,jitterY-10,10,0,2*Math.PI);
     context.fill();
 
     // context.strokeStyle="#222222";

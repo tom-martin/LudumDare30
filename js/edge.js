@@ -4,8 +4,8 @@ function Edge(planet1, planet2) {
     
   }
 
-  function render(context) {
-    var diff = new Vec2(planet1.pos).sub(planet2.pos);
+  function drawBetween(a, b) {
+    var diff = new Vec2(a).sub(b);
     var l = 255 - Math.min(255, Math.abs(diff.mag() / 6));
     var ci = Math.floor(l).toString(16);
     var c = "#"+ci+ci+ci;
@@ -20,16 +20,21 @@ function Edge(planet1, planet2) {
     perp2.scale(planet2.radius * 0.1);
 
     context.beginPath();
-    context.moveTo(planet1.pos.x + perp1.x, planet1.pos.y + perp1.y);
-    context.lineTo(planet2.pos.x - perp2.x, planet2.pos.y - perp2.y);
-    context.lineTo(planet2.pos.x + perp2.x, planet2.pos.y + perp2.y);
-    context.lineTo(planet1.pos.x - perp1.x, planet1.pos.y - perp1.y);
-    context.lineTo(planet1.pos.x + perp1.x, planet1.pos.y + perp1.y);
+    context.moveTo(a.x + perp1.x, a.y + perp1.y);
+    context.lineTo(b.x - perp2.x, b.y - perp2.y);
+    context.lineTo(b.x + perp2.x, b.y + perp2.y);
+    context.lineTo(a.x - perp1.x, a.y - perp1.y);
+    context.lineTo(a.x + perp1.x, a.y + perp1.y);
     context.stroke();
+  }
+
+  function render(context) {
+    this.drawBetween(planet1.pos, planet2.pos);
   }
 
   this.update = update;
   this.render = render;
   this.planet1 = planet1;
   this.planet2 = planet2;
+  this.drawBetween = drawBetween;
 }

@@ -87,7 +87,7 @@ function render() {
 	if(planets.length < 50 && nts > nextPlanetAddTime) {
 		var newPlanet = new Planet(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
 		planets.push(newPlanet);
-		nextPlanetAddTime += Math.random() * 100;
+		nextPlanetAddTime += Math.random() * 5000;
 
 		// if(planets.length > 1 && planets.length % 5 != 0) {
 		// 	var prevPlanet = planets[planets.length - 2];
