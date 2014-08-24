@@ -1,4 +1,4 @@
-function Ship() {
+function Ship(playShootSound) {
   var rotationSpeed = 10;
   var momentumSpeed = 2500;
 
@@ -102,7 +102,7 @@ function Ship() {
   }
 
 
-  function update(tick, input, planets, edges, addBullet, spiders) {
+  function update(tick, input, planets, edges, addBullet, spiders, playShipDeadSound) {
     var now = Date.now();
     var recentlyDead = (now - this.deadTime < 6000);
     var stillDying = (now - this.deadTime < 3000);
@@ -225,6 +225,8 @@ function Ship() {
             this.stuck = false;
             this.deadTime = now;
 
+            playShipDeadSound();
+
             for(var i = 0; i < deathShardLocs.length; i++) {
               deathShardLocs[i] = new Vec2(this.x, this.y);
               deathShardVels[i] = new Vec2((Math.random() * shardSpeed) - (shardSpeed / 2), (Math.random() * shardSpeed) - (shardSpeed / 2));
@@ -240,11 +242,12 @@ function Ship() {
         }
       }
 
-      var fireFreq = maxFireFreq / spiders.length;
+      var fireFreq = maxFireFreq / Math.min(5, spiders.length);
       if(!this.stuck && !recentlyDead && input.spacedown && now - lastFireTime > fireFreq) {
         var m = new Vec2(0, -1).rotate(this.rotation);
         addBullet(new Bullet(this.x, this.y, m));
         lastFireTime = now;
+        playShootSound();
       }
 
       this.pos.set(this.x, this.y);

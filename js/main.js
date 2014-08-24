@@ -1,4 +1,4 @@
-//  var fs = require('fs');
+ var fs = require('fs');
 
 function zeroPad(num, places) {
   var zero = places - num.toString().length + 1;
@@ -19,6 +19,47 @@ function convert(uri) {
     return new Buffer(arr);
 }
 
+var edgeDeadSounds = [new Audio("../audio/edgeDead1.ogg"),
+											new Audio("../audio/edgeDead2.ogg"),
+											new Audio("../audio/edgeDead3.ogg")];
+
+var shipDeadSounds = [new Audio("../audio/shipDead1.ogg"),
+											new Audio("../audio/shipDead2.ogg"),
+											new Audio("../audio/shipDead3.ogg")];
+
+var shootSounds = [ new Audio("../audio/shoot1.ogg"),
+										new Audio("../audio/shoot2.ogg")];
+
+var messageSounds = [ new Audio("../audio/message1.ogg",
+																"../audio/message2.ogg",
+																"../audio/message3.ogg")];
+
+function playSound(audios, volume) {
+	var a = audios[Math.floor(Math.random() * audios.length)];
+	a.volume = volume;
+	a.play();
+}
+
+function playMessageSound() {
+	playSound(messageSounds, 0.3);
+}
+
+function playEdgeDeadSound() {
+	playSound(edgeDeadSounds, 0.6);
+}
+
+function playShipDeadSound() {
+	playSound(shipDeadSounds, 1.0);
+}
+
+var shootIndex = 0;
+function playShootSound() {
+	shootIndex++;
+	var a = shootSounds[Math.round(shootIndex) % shootSounds.length];
+	a.volume = 0.2;
+	a.play();
+}
+
 var spiderImage1 = new Image();
 spiderImage1.src = "../img/spider1.png";
 
@@ -30,7 +71,7 @@ var frames = [];
 var Vec2 = dcodeIO.JustMath.Vec2;
 
 var input = new Input();
-var ship = new Ship();
+var ship = new Ship(playShootSound);
 var planets = [];
 var edges = [];
 var spiders = [];
@@ -124,8 +165,22 @@ grd2.addColorStop(0.5,"#DDDDDD");
 grd2.addColorStop(1,"#C0C0C0");
 
 function upScore(amount, name) {
+	playMessageSound();
 	ship.score += amount;
-	messages.push(name+" is saved!");
+	var chance = Math.random();
+	var m = ""
+	if(chance < 0.3) {
+		m = name+" just made it!";
+	} else if(chance < 0.6) {
+		m = name+" escaped!";
+	} else {
+		m = name+" is saved!";
+	}
+
+	if(Math.random() < 0.01) {
+		m+= " Thanks to you!";
+	}
+	messages.push(m);
 }
 
 function render() {
@@ -143,7 +198,7 @@ function render() {
 
   var tick = dt / 1000;
 
-	if(planets.length < 7 || (newPlanetRequired && Date.now() > nextPlanetAddTime)) {
+	if(planets.length < 100 || (newPlanetRequired && Date.now() > nextPlanetAddTime)) {
 		var newPlanet = new Planet(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
 		planets.push(newPlanet);
 		nextPlanetAddTime += Math.random() * 5000;
@@ -168,14 +223,14 @@ function render() {
   	spiders[i].update(tick, planets, addEdge);
   }
 
-	ship.update(tick, input, planets, edges, addBullet, spiders);
+	ship.update(tick, input, planets, edges, addBullet, spiders, playShipDeadSound);
 
 	for(var i = 0; i < bullets.length; i++) {
   	bullets[i].update(tick, edges);
   }
 
   for(var i = 0; i < edges.length; i++) {
-  	edges[i].update(tick);
+  	edges[i].update(tick, playEdgeDeadSound);
   }
 
 	canvas.width = canvas.width;

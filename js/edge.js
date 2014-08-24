@@ -2,9 +2,10 @@ function Edge(planet1, planet2) {
   var deathStartTime = -1;
   var shardSpeed = 100;
 
-  function update(tick) {
+  function update(tick, playEdgeDeadSound) {
     var now = Date.now();
     if(this.health <= 0 && deathStartTime < 0) {
+      playEdgeDeadSound();
       deathStartTime = now;
 
       for(var i = 0; i < deathShardLocs.length; i++) {
