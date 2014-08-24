@@ -4,10 +4,10 @@ function Planet(startX, startY) {
 
   this.edges = [];
 
-  var k = 200;
-  var k2 = 220;
+  var k = 230;
+  var k2 = 250;
 
-  var maxSpeed = 300;
+  var maxSpeed = 500;
 
   var hadAnEdge = false;
 

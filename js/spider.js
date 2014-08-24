@@ -4,7 +4,7 @@ function Spider(startX, startY) {
 
   var targetPlanet = null;
   var prevPlanet = null;
-  var speed = 500;
+  var speed = 600;
   var colRadius = 25;
 
   var dummyEdge = new Edge();

@@ -2,7 +2,7 @@ function Ship() {
   var rotationSpeed = 20;
   var momentumSpeed = 2500;
 
-  var speed = 300;
+  var speed = 500;
 
   this.rotation = 0;
   this.x = 0;

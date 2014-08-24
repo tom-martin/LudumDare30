@@ -32,6 +32,7 @@ var spiders = [];
 
 spiders.push(new Spider(10, 10));
 spiders.push(new Spider(50, 50));
+spiders.push(new Spider(80, 80));
 
 var canvas = document.getElementById('gameCanvas');
 var context = canvas.getContext('2d');
