@@ -4,10 +4,12 @@ function Planet(startX, startY) {
 
   this.edges = [];
 
-  var k = 150;
-  var k2 = 170;
+  var k = 200;
+  var k2 = 220;
 
-  var maxSpeed = 100;
+  var maxSpeed = 300;
+
+  var hadAnEdge = false;
 
   this.radius = 10 + (Math.random() * 20);
 
@@ -49,11 +51,16 @@ function Planet(startX, startY) {
 
     }
 
-    // Gravitate to center
+    // Gravitate to center)
     var diff = new Vec2(this.pos).sub(centerX, centerY);
     var distance = diff.mag() + 0.1;
-    this.disp.x -= (diff.x / distance) * ((distance * distance) / k2);
-    this.disp.y -= (diff.y / distance) * ((distance * distance) / k2);
+    if(this.edges.length > 0) {
+      hadAnEdge = true;
+    }
+    if(this.edges.length > 0 || !hadAnEdge) {
+      this.disp.x -= (diff.x / distance) * ((distance * distance) / k2);
+      this.disp.y -= (diff.y / distance) * ((distance * distance) / k2);
+    }
     
 
     this.disp.x = Math.max(-maxSpeed, this.disp.x);

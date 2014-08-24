@@ -28,6 +28,10 @@ var input = new Input();
 var ship = new Ship();
 var planets = [];
 var edges = [];
+var spiders = [];
+
+spiders.push(new Spider(10, 10));
+spiders.push(new Spider(50, 50));
 
 var canvas = document.getElementById('gameCanvas');
 var context = canvas.getContext('2d');
@@ -68,6 +72,20 @@ var frameIndex = 0;
 
 var nextPlanetAddTime = Date.now() + 1000;
 var nextEdgeAddTime = Date.now() + 1000;
+newPlanetRequired = false;
+
+function addEdge(planet1, planet2) {
+	if(planet1 != planet2) {
+		var newEdge = new Edge(planet1, planet2);
+		edges.push(newEdge);
+		planet1.edges.push(newEdge);
+		planet2.edges.push(newEdge);
+		
+		if(planets.length < 100) {
+			newPlanetRequired = true;
+		}
+	}
+}
 
 function render() {
 	frameIndex ++;
@@ -84,34 +102,20 @@ function render() {
 
   var tick = dt / 1000;
 
-	if(planets.length < 50 && nts > nextPlanetAddTime) {
+	if(planets.length < 20 || newPlanetRequired) {
 		var newPlanet = new Planet(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
 		planets.push(newPlanet);
 		nextPlanetAddTime += Math.random() * 5000;
 
-		// if(planets.length > 1 && planets.length % 5 != 0) {
-		// 	var prevPlanet = planets[planets.length - 2];
-		// 	var newEdge = new Edge(newPlanet, prevPlanet);
-		// 	edges.push(newEdge);
-
-		// 	newPlanet.edges.push(newEdge);
-		// 	prevPlanet.edges.push(newEdge);
-		// }
-
-		if(planets.length > 2) {
-			var prevPlanet = planets[Math.floor(Math.random() * planets.length)];
-			var newEdge = new Edge(newPlanet, prevPlanet);
-			edges.push(newEdge);
-
-			if(newPlanet != prevPlanet) {
-				newPlanet.edges.push(newEdge);
-				prevPlanet.edges.push(newEdge);
-			}
-		}
+		newPlanetRequired = false;
 	}
 
 	for(var i = 0; i < planets.length; i++) {
   	planets[i].update(tick, planets, 0, 0);
+  }
+
+  for(var i = 0; i < spiders.length; i++) {
+  	spiders[i].update(tick, planets, addEdge);
   }
 
 	ship.update(tick, input, planets, edges);
@@ -128,9 +132,14 @@ function render() {
 
 	ship.render(context);
 
+	for(var i = 0; i < spiders.length; i++) {
+  	spiders[i].render(context);
+  }
+
   for(var i = 0; i < planets.length; i++) {
   	planets[i].render(context);
   }
+
 
   if(startCap && frameIndex % 3 == 0) {
 		frames.push(canvas.toDataURL("image/png"));

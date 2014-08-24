@@ -44,25 +44,6 @@ function Ship() {
     return false;
   }
 
-
-  // function testEdgeCollision(edge, tick) {
-  //   // Transform to local coordinates
-  //   var localP1 = new Vec2(edge.planet1.pos).sub(this.x, this.y);
-  //   var localP2 = new Vec2(edge.planet2.pos).sub(this.x, this.y);
-  //   // // Precalculate this value. We use it often
-  //   var p2MinusP1 = localP2.clone().sub(localP1);
-  
-  //   var a = (p2MinusP1.x) * (p2MinusP1.x) + (p2MinusP1.y) * (p2MinusP1.y);
-  //   var b = 2 * ((p2MinusP1.x *localP1.x) + (p2MinusP1.y * localP1.y));
-  //   var c = (localP1.x * localP1.x) + (localP1.y * localP1.y) - (colRadius * colRadius);
-  //   var delta = b * b - (4 * a * c);
-  //   if (delta < 0) {
-  //     return false;
-  //   } else {
-  //     return true;
-  //   }
-  // }
-
   function closestPoint(x, y, edge) {
     var seg_v = new Vec2(edge.planet2.pos).sub(edge.planet1.pos);
     var seg_v_mag = seg_v.mag();
@@ -88,33 +69,6 @@ function Ship() {
 
 
   function update(tick, input, planets, edges) {
-    // var damp = Math.min(0.99, (20 * tick));
-    // if(damp == 0.99) {
-    //   console.log("Warning. Max Damping "+(50 * tick))
-    // }
-    // momentumX *= damp;
-    // momentumY *= damp;
-    // if(input.leftdown) {
-    //   this.rotation -= (tick * rotationSpeed);
-    // }
-
-    // if(input.rightdown) {
-    //   this.rotation += (tick * rotationSpeed);
-    // }
-
-    // if(input.updown) {
-    //   var momentumDelta = tick * momentumSpeed;
-    //   momentumX += ((0) * Math.cos(this.rotation)) - ((-momentumDelta) * Math.sin(this.rotation));
-    //   momentumY += ((momentumDelta) * Math.cos(this.rotation)) - ((0) * Math.sin(this.rotation));
-
-    //   momentumX = Math.min(momentumX, momentumSpeed);
-    //   momentumY = Math.min(momentumY, momentumSpeed);
-    //   momentumX = Math.max(momentumX, -momentumSpeed);
-    //   momentumY = Math.max(momentumY, -momentumSpeed);
-    // }
-
-    // this.x += (tick * momentumX);
-    // this.y -= (tick * momentumY);
 
     edgeColliding = false;
     for(var i = 0; i < edges.length; i++) {
@@ -220,8 +174,8 @@ function Ship() {
 
   function render(context) {
     if(stuckEdge != null) {
-      stuckEdge.drawBetween(new Vec2(this.x, this.y), stuckEdge.planet1.pos);
-      stuckEdge.drawBetween(new Vec2(this.x, this.y), stuckEdge.planet2.pos);
+      stuckEdge.drawBetween(new Vec2(this.x, this.y), colRadius, stuckEdge.planet1.pos, stuckEdge.planet1.radius);
+      stuckEdge.drawBetween(new Vec2(this.x, this.y), colRadius, stuckEdge.planet2.pos, stuckEdge.planet2.radius);
     }
     if(collided) {
       context.fillStyle="#FFAAAA";
