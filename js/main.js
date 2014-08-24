@@ -29,6 +29,7 @@ var ship = new Ship();
 var planets = [];
 var edges = [];
 var spiders = [];
+var bullets = [];
 
 var stars = [];
 
@@ -36,6 +37,10 @@ for(var i = 0; i < 100; i++) {
 	stars.push(new Vec2(Math.round(Math.random() * 2000 - 1000), Math.round(Math.random() * 2000 - 1000)));
 }
 
+spiders.push(new Spider(10, 10));
+spiders.push(new Spider(10, 10));
+spiders.push(new Spider(10, 10));
+spiders.push(new Spider(10, 10));
 spiders.push(new Spider(10, 10));
 
 
@@ -86,10 +91,23 @@ function addEdge(planet1, planet2) {
 		edges.push(newEdge);
 		planet1.edges.push(newEdge);
 		planet2.edges.push(newEdge);
+
+		planet1.healthyEdges += 1;
+		planet2.healthyEdges += 1;
 		
 		if(planets.length < 100) {
 			newPlanetRequired = true;
 		}
+	}
+}
+
+var nextBulletIndex = 0;
+function addBullet(bullet) {
+	if(bullets.length < 50) {
+		bullets.push(bullet);
+	} else {
+		bullets[nextBulletIndex % bullets.length] = bullet;
+		nextBulletIndex++;
 	}
 }
 
@@ -128,7 +146,11 @@ function render() {
   	spiders[i].update(tick, planets, addEdge);
   }
 
-	ship.update(tick, input, planets, edges);
+	ship.update(tick, input, planets, edges, addBullet);
+
+	for(var i = 0; i < bullets.length; i++) {
+  	bullets[i].update(tick, edges);
+  }
 
 	canvas.width = canvas.width;
   
@@ -156,6 +178,10 @@ function render() {
 
   for(var i = 0; i < planets.length; i++) {
   	planets[i].render(context);
+  }
+
+  for(var i = 0; i < bullets.length; i++) {
+  	bullets[i].render(context);
   }
 
 

@@ -1,5 +1,5 @@
 function Ship() {
-  var rotationSpeed = 20;
+  var rotationSpeed = 10;
   var momentumSpeed = 2500;
 
   var speed = 500;
@@ -26,6 +26,10 @@ function Ship() {
 
   var planetIndex = 0;
   var collidedPlanet = null;
+
+  var fireFreq = 250;
+  var lastFireTime = Date.now();
+  var origin = new Vec2(0, 0);
 
   function testPlanetCollision(planet, tick) {
     if(!( this.x + colRadius < planet.pos.x - planet.radius ||
@@ -68,18 +72,20 @@ function Ship() {
   }
 
 
-  function update(tick, input, planets, edges) {
+  function update(tick, input, planets, edges, addBullet) {
 
     edgeColliding = false;
     for(var i = 0; i < edges.length; i++) {
       var edge = edges[i];
-      if(this.testEdgeCollision(edge, tick)) {
-        edgeColliding = true;
-        if(edgeCollidingStart == -1) {
-          stuckEdge = edge;
-          edgeCollidingStart = Date.now();
+      if(edge.health > 0) {
+        if(this.testEdgeCollision(edge, tick)) {
+          edgeColliding = true;
+          if(edgeCollidingStart == -1) {
+            stuckEdge = edge;
+            edgeCollidingStart = Date.now();
+          }
+          break;
         }
-        break;
       }
     }
 
@@ -169,6 +175,12 @@ function Ship() {
       if(planetIndex >= planets.length) {
         planetIndex = 0;
       }
+    }
+
+    if(!stuck && input.spacedown && Date.now() - lastFireTime > fireFreq) {
+      var m = new Vec2(0, -1).rotate(this.rotation);
+      addBullet(new Bullet(this.x, this.y, m));
+      lastFireTime = Date.now();
     }
   }
 

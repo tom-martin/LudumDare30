@@ -4,6 +4,8 @@ function Planet(startX, startY) {
 
   this.edges = [];
 
+  this.healthyEdges = 0;
+
   var k = 230;
   var k2 = 250;
 
@@ -11,7 +13,8 @@ function Planet(startX, startY) {
 
   var hadAnEdge = false;
 
-  this.radius = 10 + (Math.random() * 20);
+  this.radius = 10 + (Math.random() * 40);
+  var origin = new Vec2(0, 0);
 
   var r = Math.floor((100 + Math.random()*156)).toString(16);
   var g = Math.floor((100 + Math.random()*156)).toString(16);
@@ -36,17 +39,20 @@ function Planet(startX, startY) {
 
     // Push toward connected planets
     for(var i = 0; i < this.edges.length; i++) {
-      var otherPlanet = this.edges[i].planet1;
-      if(otherPlanet == this) {
-        otherPlanet = this.edges[i].planet2;
-      }
+      var edge = this.edges[i];
+      if(edge.health > 0) {
+        var otherPlanet = edge.planet1;
+        if(otherPlanet == this) {
+          otherPlanet = edge.planet2;
+        }
 
-      var diff = new Vec2(this.pos).sub(otherPlanet.pos);
-      var distance = diff.mag() + 0.1;
+        var diff = new Vec2(this.pos).sub(otherPlanet.pos);
+        var distance = diff.mag() + 0.1;
 
-      if(distance != 0) {
-        this.disp.x -= (diff.x / distance) * ((distance * distance) / k2);
-        this.disp.y -= (diff.y / distance) * ((distance * distance) / k2);
+        if(distance != 0) {
+          this.disp.x -= (diff.x / distance) * ((distance * distance) / k2);
+          this.disp.y -= (diff.y / distance) * ((distance * distance) / k2);
+        }
       }
 
     }
@@ -54,10 +60,10 @@ function Planet(startX, startY) {
     // Gravitate to center)
     var diff = new Vec2(this.pos).sub(centerX, centerY);
     var distance = diff.mag() + 0.1;
-    if(this.edges.length > 0) {
+    if(this.healthyEdges > 0) {
       hadAnEdge = true;
     }
-    if(this.edges.length > 0 || !hadAnEdge) {
+    if(this.healthyEdges > 0 || !hadAnEdge) {
       this.disp.x -= (diff.x / distance) * ((distance * distance) / k2);
       this.disp.y -= (diff.y / distance) * ((distance * distance) / k2);
     }
@@ -69,6 +75,20 @@ function Planet(startX, startY) {
     this.disp.y = Math.min(maxSpeed, this.disp.y);
 
     this.pos.add(this.disp.x * tick, this.disp.y * tick);
+
+    if(Math.abs(this.pos.distSq(origin)) > 9000000) {
+      hadAnEdge = false;
+      this.healthyEdges = 0;
+      this.pos.set(startX, startY);
+
+      var r = Math.floor((100 + Math.random()*156)).toString(16);
+      var g = Math.floor((100 + Math.random()*156)).toString(16);
+      var b = Math.floor((100 + Math.random()*156)).toString(16);
+
+      c = "#"+r+g+b;
+      
+      this.radius = 10 + (Math.random() * 40);
+    }
   }
 
   function render(context) {

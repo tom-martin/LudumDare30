@@ -4,7 +4,7 @@ function Edge(planet1, planet2) {
     
   }
 
-  var health = 2 + Math.round(Math.random() * 8);
+  this.health = 2 + Math.round(Math.random() * 8);
 
   function drawBetween(a, aRadius, b, bRadius) {
     var diff = new Vec2(a).sub(b);
@@ -13,7 +13,7 @@ function Edge(planet1, planet2) {
     var c = "#"+ci+ci+ci;
 
     context.strokeStyle=c;
-    context.lineWidth = health;
+    context.lineWidth = this.health;
 
     var perp1 = diff.norm().ort();
     var perp2 = perp1.clone();
@@ -31,7 +31,9 @@ function Edge(planet1, planet2) {
   }
 
   function render(context) {
-    this.drawBetween(planet1.pos, planet1.radius, planet2.pos, planet2.radius);
+    if(this.health > 0) {
+      this.drawBetween(planet1.pos, planet1.radius, planet2.pos, planet2.radius);
+    }
   }
 
   this.update = update;

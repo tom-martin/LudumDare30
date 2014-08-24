@@ -3,6 +3,7 @@ function Input() {
   this.rightdown = false;
   this.updown = false;
   this.downdown = false;
+  this.spacedown = false;
 
   var inputThis = this;
 
@@ -22,6 +23,10 @@ function Input() {
     if (e.keyCode == 83) {
       inputThis.downdown = true;
     }
+
+    if (e.keyCode == 32) {
+      inputThis.spacedown = true;
+    }
   }
 
   function keyup(e) {
@@ -39,6 +44,10 @@ function Input() {
 
     if (e.keyCode == 83) {
       inputThis.downdown = false;
+    }
+
+    if (e.keyCode == 32) {
+      inputThis.spacedown = false;
     }
   }
 
