@@ -37,8 +37,6 @@ for(var i = 0; i < 100; i++) {
 }
 
 spiders.push(new Spider(10, 10));
-spiders.push(new Spider(50, 50));
-spiders.push(new Spider(80, 80));
 
 
 var canvas = document.getElementById('gameCanvas');
