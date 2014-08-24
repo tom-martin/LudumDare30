@@ -8,6 +8,8 @@ function Ship() {
   this.x = 0;
   this.y = 0;
 
+  this.pos = new Vec2(this.x, this.y);
+
   var k2 = 170;
   var maxStuckSpeed =75;
 
@@ -29,6 +31,7 @@ function Ship() {
 
   var fireFreq = 250;
   var lastFireTime = Date.now();
+
   var origin = new Vec2(0, 0);
 
   function testPlanetCollision(planet, tick) {
@@ -181,6 +184,17 @@ function Ship() {
       var m = new Vec2(0, -1).rotate(this.rotation);
       addBullet(new Bullet(this.x, this.y, m));
       lastFireTime = Date.now();
+    }
+
+    this.pos.set(this.x, this.y);
+    if(Math.abs(this.pos.distSq(origin)) > 1000000) {
+      origin.sub(this.pos);
+      origin.norm();
+
+      this.x += origin.x * tick * (speed * 2);
+      this.y += origin.y * tick * (speed * 2);
+
+      origin.set(0, 0);
     }
   }
 
