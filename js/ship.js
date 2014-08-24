@@ -177,11 +177,9 @@ function Ship() {
       stuckEdge.drawBetween(new Vec2(this.x, this.y), colRadius, stuckEdge.planet1.pos, stuckEdge.planet1.radius);
       stuckEdge.drawBetween(new Vec2(this.x, this.y), colRadius, stuckEdge.planet2.pos, stuckEdge.planet2.radius);
     }
-    if(collided) {
-      context.fillStyle="#FFAAAA";
-    } else {
-      context.fillStyle="#FFFFAA";
-    }
+    
+    context.fillStyle="#FFFF88";
+    
 
     var jitterX = 0;
     var jitterY = 0;
@@ -194,13 +192,9 @@ function Ship() {
     context.rotate(this.rotation);
     context.fillRect(jitterX-10, jitterY-10, 20, 20);
     context.beginPath();
+    context.moveTo(0, 0);
     context.arc(jitterX,jitterY-10,10,0,2*Math.PI);
     context.fill();
-
-    // context.strokeStyle="#222222";
-    // context.beginPath();
-    // context.arc(0,0,colRadius,0,2*Math.PI);
-    // context.stroke();
 
     context.rotate(-this.rotation);
     context.translate(-this.x, -this.y);

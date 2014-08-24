@@ -4,6 +4,8 @@ function Edge(planet1, planet2) {
     
   }
 
+  var health = 2 + Math.round(Math.random() * 8);
+
   function drawBetween(a, aRadius, b, bRadius) {
     var diff = new Vec2(a).sub(b);
     var l = 255 - Math.min(255, Math.abs(diff.mag() / 6));
@@ -11,7 +13,7 @@ function Edge(planet1, planet2) {
     var c = "#"+ci+ci+ci;
 
     context.strokeStyle=c;
-    context.lineWidth = 5;
+    context.lineWidth = health;
 
     var perp1 = diff.norm().ort();
     var perp2 = perp1.clone();

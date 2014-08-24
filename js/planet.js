@@ -75,6 +75,7 @@ function Planet(startX, startY) {
     context.fillStyle=c;
     context.translate(this.pos.x, this.pos.y);
     context.beginPath();
+    context.moveTo(0, 0);
     context.arc(0,0,this.radius,0,2*Math.PI);
     context.fill();
 

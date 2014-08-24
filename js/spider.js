@@ -61,6 +61,8 @@ function Spider(startX, startY) {
     context.strokeStyle="#FFFFFF";
     context.translate(this.pos.x, this.pos.y);
     context.fillRect(-25,-25,50,50);
+    context.beginPath();
+    context.moveTo(0, 0);
     context.rect(-25,-25,50,50);
     context.stroke();
     context.translate(-this.pos.x, -this.pos.y);

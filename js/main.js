@@ -30,9 +30,16 @@ var planets = [];
 var edges = [];
 var spiders = [];
 
+var stars = [];
+
+for(var i = 0; i < 100; i++) {
+	stars.push(new Vec2(Math.round(Math.random() * 2000 - 1000), Math.round(Math.random() * 2000 - 1000)));
+}
+
 spiders.push(new Spider(10, 10));
 spiders.push(new Spider(50, 50));
 spiders.push(new Spider(80, 80));
+
 
 var canvas = document.getElementById('gameCanvas');
 var context = canvas.getContext('2d');
@@ -88,6 +95,10 @@ function addEdge(planet1, planet2) {
 	}
 }
 
+var grd=context.createRadialGradient(0, 0, 20, 100, 0, 10000);
+grd.addColorStop(0,"#2D2D2D");
+grd.addColorStop(1,"#FDFDFD");
+
 function render() {
 	frameIndex ++;
 
@@ -122,10 +133,18 @@ function render() {
 	ship.update(tick, input, planets, edges);
 
 	canvas.width = canvas.width;
-  context.fillStyle="#111111";
-  context.fillRect(0,0,canvas.width,canvas.height);
-
+  
+  
+	context.fillStyle=grd;
   context.translate(-ship.x + canvas.width / 2, -ship.y + canvas.height / 2);	  
+  context.fillRect(ship.x - canvas.width / 2, ship.y - canvas.height / 2, canvas.width,canvas.height);
+
+	context.fillStyle="#FAFAFA";
+  for(var i = 0; i < stars.length; i++) {
+  	var star = stars[i];
+  	var winkness = ((((nts / ((i + 10) * 10)) + (i % 6)) % 6) - 3);
+  	context.fillRect(star.x - winkness, star.y - winkness, winkness*2, winkness*2);
+  }
 
   for(var i = 0; i < edges.length; i++) {
   	edges[i].render(context);
