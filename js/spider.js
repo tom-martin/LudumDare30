@@ -69,7 +69,7 @@ function Spider(startX, startY, img1, img2) {
       var dist = Math.abs(this.disp.mag());
       this.disp.norm();
 
-      adjSpeed *= (Math.min(400, dist) / 400);
+      adjSpeed *= (Math.min(300, dist) / 300);
     }
 
     

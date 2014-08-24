@@ -1,7 +1,34 @@
 function Edge(planet1, planet2) {
+  var deathStartTime = -1;
+  var shardSpeed = 100;
 
-  function update() {
+  function update(tick) {
+    var now = Date.now();
+    if(this.health <= 0 && deathStartTime < 0) {
+      deathStartTime = now;
+
+      for(var i = 0; i < deathShardLocs.length; i++) {
+        var planet = i % 2 == 0 ? planet1 : planet2;
+        deathShardLocs[i] = new Vec2(planet.pos);
+        deathShardVels[i] = new Vec2((Math.random() * shardSpeed) - (shardSpeed / 2), (Math.random() * shardSpeed) - (shardSpeed / 2));
+      }
+    }
+
+    if(deathStartTime > 0 && Date.now() - deathStartTime < 1000) {
+      for(var i = 0; i < deathShardLocs.length; i++) {
+        deathShardLocs[i].x += deathShardVels[i].x * tick;
+        deathShardLocs[i].y += deathShardVels[i].y * tick;
+      }
+    }
     
+  }
+
+  var deathShardLocs = [];
+  var deathShardVels = [];
+  var shardSpeed = 500;
+  for(var i = 0; i < 10; i++) {
+    deathShardLocs[i] = new Vec2(0, 0);
+    deathShardVels[i] = new Vec2(0, 0);
   }
 
   this.health = 2 + Math.round(Math.random() * 8);
@@ -33,6 +60,12 @@ function Edge(planet1, planet2) {
   function render(context) {
     if(this.health > 0) {
       this.drawBetween(planet1.pos, planet1.radius, planet2.pos, planet2.radius);
+    } else if(deathStartTime > 0 && Date.now() - deathStartTime < 1000) {
+      context.fillStyle="#FFFFFF";
+      for(var i = 0; i < deathShardLocs.length; i++) {
+        var loc = deathShardLocs[i];
+        context.fillRect(loc.x, loc.y, 10, 10)
+      }
     }
   }
 

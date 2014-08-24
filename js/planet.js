@@ -1,3 +1,8 @@
+var randomPlanetNames = ["Kazon", "Terra", "Capricciosa", "Ociramma", "Sevir", "Doggax", "Querassa", "Noxu", "Reitas", "Caragh", "Dustplanet", "Kizerain",
+                          "Cabbage", "Conson", "Paria", "Duplio", "Garden", "Creep"];
+var randomPlanetAdjs = ["Old", "Blue", "New", "Dark", "Lost", "Mirky", "Green", "Creepy", "Yellow", "Red", 
+                          "Far", "Dusty", "Big", "Small", "Lesser"];
+
 function Planet(startX, startY) {
   this.pos = new Vec2(startX, startY);
   this.disp = new Vec2(0, 0);
@@ -21,6 +26,27 @@ function Planet(startX, startY) {
   var b = Math.floor((100 + Math.random()*156)).toString(16);
 
   var c = "#"+r+g+b;
+
+  function randomPlanetName() {
+    var start = randomPlanetNames[Math.floor(Math.random() * randomPlanetNames.length)];
+    
+    var name = start;
+    if(Math.random() < 0.5) {
+      name = randomPlanetAdjs[Math.floor(Math.random() * randomPlanetAdjs.length)]+" "+start;
+    } else if(Math.random() < 0.5){
+      name = start + " " +((Math.floor(Math.random()*9)+1));
+    }
+
+    if(Math.random < 0.05) {
+      name = "The "+name;
+    }
+
+    return name;
+  }
+
+  var name = randomPlanetName();
+
+
 
   function update(tick, planets, centerX, centerY, upScore) {
     this.disp.set(0, 0);
@@ -76,8 +102,8 @@ function Planet(startX, startY) {
 
     this.pos.add(this.disp.x * tick, this.disp.y * tick);
 
-    if(Math.abs(this.pos.distSq(origin)) > 4000000) {
-      upScore(this.radius);
+    if(Math.abs(this.pos.distSq(origin)) > 3000000) {
+      upScore(this.radius, name);
       this.hadAnEdge = false;
       this.healthyEdges = 0;
       this.pos.set(startX, startY);
@@ -89,6 +115,8 @@ function Planet(startX, startY) {
       c = "#"+r+g+b;
       
       this.radius = 10 + Math.round((Math.random() * 40));
+
+      name = randomPlanetName();
     }
   }
 

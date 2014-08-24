@@ -36,6 +36,9 @@ var edges = [];
 var spiders = [];
 var bullets = [];
 
+var messages = ["", "", "", "", ""];
+var messageOffset = 0;
+
 var stars = [];
 
 for(var i = 0; i < 100; i++) {
@@ -120,8 +123,9 @@ grd2.addColorStop(0,"#C0C0C0");
 grd2.addColorStop(0.5,"#DDDDDD");
 grd2.addColorStop(1,"#C0C0C0");
 
-function upScore(amount) {
+function upScore(amount, name) {
 	ship.score += amount;
+	messages.push(name+" is saved!");
 }
 
 function render() {
@@ -168,6 +172,10 @@ function render() {
 
 	for(var i = 0; i < bullets.length; i++) {
   	bullets[i].update(tick, edges);
+  }
+
+  for(var i = 0; i < edges.length; i++) {
+  	edges[i].update(tick);
   }
 
 	canvas.width = canvas.width;
@@ -228,8 +236,24 @@ function render() {
   }
 
 	context.fillStyle="#FFFFFF";
+	context.strokeStyle="#000000";
+	context.lineWidth = 4;
 	context.font = 'italic 35pt sans-serif';
-  context.fillText(""+ship.score, 105, 43);;
+	context.strokeText(""+ship.score, 105, 43);
+  context.fillText(""+ship.score, 105, 43);
+
+  messageOffset = Math.max(0, messageOffset - (10 * messages.length * tick));
+  if(messageOffset <= 0) {
+  	messageOffset = 35;
+		messages.splice(0, 1);
+  }
+  context.font = '15pt monospace';
+  for(var i = 0; i < messages.length; i++) {
+  	context.strokeText(messages[i], 20, 70 + messageOffset + (35 * i));
+  }
+  for(var i = 0; i < messages.length; i++) {
+  	context.fillText(messages[i], 20, 70 + messageOffset + (35 * i));
+  }
 
 
   if(startCap && frameIndex % 3 == 0) {
