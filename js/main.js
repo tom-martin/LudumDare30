@@ -111,9 +111,14 @@ function addBullet(bullet) {
 	}
 }
 
-var grd=context.createRadialGradient(0, 0, 20, 100, 0, 10000);
+var grd=context.createRadialGradient(0, 0, 20, 0, 0, 10000);
 grd.addColorStop(0,"#2D2D2D");
-grd.addColorStop(1,"#FDFDFD");
+grd.addColorStop(1,"#FEFEFD");
+
+var grd2=context.createRadialGradient(0, 0, 980, 0, 0, 1020);
+grd2.addColorStop(0,"#C0C0C0");
+grd2.addColorStop(0.5,"#DDDDDD");
+grd2.addColorStop(1,"#C0C0C0");
 
 function render() {
 	frameIndex ++;
@@ -183,6 +188,12 @@ function render() {
   for(var i = 0; i < bullets.length; i++) {
   	bullets[i].render(context);
   }
+
+  context.strokeStyle = grd2;
+  context.lineWidth = 30;
+  context.beginPath();
+  context.arc(0, 0, 1000, 0, 2 * Math.PI);
+  context.stroke();
 
 
   if(startCap && frameIndex % 3 == 0) {
