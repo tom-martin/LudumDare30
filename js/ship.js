@@ -8,6 +8,10 @@ function Ship() {
   this.x = 0;
   this.y = 0;
 
+  this.lives = 5;
+  this.dead = false;
+  this.deadTime = 0;
+
   this.pos = new Vec2(this.x, this.y);
 
   var k2 = 170;
@@ -29,10 +33,24 @@ function Ship() {
   var planetIndex = 0;
   var collidedPlanet = null;
 
-  var fireFreq = 250;
+  var maxFireFreq = 500;
   var lastFireTime = Date.now();
 
   var origin = new Vec2(0, 0);
+
+  function testSpiderCollision(spider, tick) {
+    if(!( this.x + colRadius < spider.pos.x - spider.radius ||
+            this.x - colRadius > spider.pos.x + spider.radius ||
+            this.y + colRadius < spider.pos.y - spider.radius ||
+            this.y - colRadius > spider.pos.y + spider.radius)) {
+      var difference = new Vec2(this.x, this.y).sub(spider.pos);
+      if(Math.abs(difference.mag()) < colRadius + spider.radius) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   function testPlanetCollision(planet, tick) {
     if(!( this.x + colRadius < planet.pos.x - planet.radius ||
@@ -75,24 +93,28 @@ function Ship() {
   }
 
 
-  function update(tick, input, planets, edges, addBullet) {
+  function update(tick, input, planets, edges, addBullet, spiders) {
+    var now = Date.now();
+    var recentlyDead = (now - this.deadTime < 6000);
 
     edgeColliding = false;
-    for(var i = 0; i < edges.length; i++) {
-      var edge = edges[i];
-      if(edge.health > 0) {
-        if(this.testEdgeCollision(edge, tick)) {
-          edgeColliding = true;
-          if(edgeCollidingStart == -1) {
-            stuckEdge = edge;
-            edgeCollidingStart = Date.now();
+    if(!recentlyDead) {
+      for(var i = 0; i < edges.length; i++) {
+        var edge = edges[i];
+        if(edge.health > 0) {
+          if(this.testEdgeCollision(edge, tick)) {
+            edgeColliding = true;
+            if(edgeCollidingStart == -1) {
+              stuckEdge = edge;
+              edgeCollidingStart = now;
+            }
+            break;
           }
-          break;
         }
       }
     }
 
-    var timeSince = (Date.now() - edgeCollidingStart);
+    var timeSince = (now - edgeCollidingStart);
     if(edgeCollidingStart != -1 && timeSince < 3000) {
       stuck = true;
     } else if(timeSince < 6000) {
@@ -104,26 +126,28 @@ function Ship() {
 
     movementVec.set(0, 0);
 
-    if(input.rightdown) {
-      movementVec.x = 1;
-    }
+    if(!this.dead) {
+      if(input.rightdown) {
+        movementVec.x = 1;
+      }
 
-    if(input.leftdown) {
-      movementVec.x = -1;
-    }
+      if(input.leftdown) {
+        movementVec.x = -1;
+      }
 
-    if(input.downdown) {
-      movementVec.y = 1;
-    }
+      if(input.downdown) {
+        movementVec.y = 1;
+      }
 
-    if(input.updown) {
-      movementVec.y = -1;
-    }
-    
-    movementVec.norm();
+      if(input.updown) {
+        movementVec.y = -1;
+      }
+      
+      movementVec.norm();
 
-    if(input.rightdown || input.leftdown || input.updown || input.downdown) {
-      previousVec.set(movementVec);
+      if(input.rightdown || input.leftdown || input.updown || input.downdown) {
+        previousVec.set(movementVec);
+      }
     }
 
     var targetRotation = Math.atan2(previousVec.y, previousVec.x)+(Math.PI/2);
@@ -161,29 +185,41 @@ function Ship() {
       this.y += movementVec.y * tick*speed;
     }
 
-    collided = false;
-    if(collidedPlanet && this.testPlanetCollision(collidedPlanet, tick)) {
-      collided = true;
-      collidedPlanet = collidedPlanet; 
-    }
-
-    for(var i = 0; i < Math.min(planets.length, 50); i++) {
-      var planet = planets[planetIndex];
-      if(this.testPlanetCollision(planet, tick)) {
+    if(now - this.deadTime > 6000) {
+      collided = false;
+      if(collidedPlanet && this.testPlanetCollision(collidedPlanet, tick)) {
         collided = true;
-        collidedPlanet = planet;
+        collidedPlanet = collidedPlanet; 
       }
 
-      planetIndex += 1;
-      if(planetIndex >= planets.length) {
-        planetIndex = 0;
+      for(var i = 0; i < Math.min(planets.length, 50); i++) {
+        var planet = planets[planetIndex];
+        if(this.testPlanetCollision(planet, tick)) {
+          collided = true;
+          collidedPlanet = planet;
+        }
+
+        planetIndex += 1;
+        if(planetIndex >= planets.length) {
+          planetIndex = 0;
+        }
+      }
+
+      for(var i = 0; i < spiders.length; i++) {
+        var spider = spiders[i];
+        if(this.testSpiderCollision(spider, tick)) {
+          this.dead = true;
+          stuck = false;
+          this.deadTime = now;
+        }
       }
     }
 
-    if(!stuck && input.spacedown && Date.now() - lastFireTime > fireFreq) {
+    var fireFreq = maxFireFreq / spiders.length;
+    if(!stuck && !recentlyDead && input.spacedown && now - lastFireTime > fireFreq) {
       var m = new Vec2(0, -1).rotate(this.rotation);
       addBullet(new Bullet(this.x, this.y, m));
-      lastFireTime = Date.now();
+      lastFireTime = now;
     }
 
     this.pos.set(this.x, this.y);
@@ -196,9 +232,20 @@ function Ship() {
 
       origin.set(0, 0);
     }
+
+    if(now - this.deadTime > 3000) {
+      this.dead = false;
+    }
   }
 
   function render(context) {
+    var now = Date.now();
+    if(now - this.deadTime < 3000) {
+      return;
+    }
+    if(now - this.deadTime < 6000 && (now % 500) < 250) {
+      return;
+    }
     if(stuckEdge != null) {
       stuckEdge.drawBetween(new Vec2(this.x, this.y), colRadius, stuckEdge.planet1.pos, stuckEdge.planet1.radius);
       stuckEdge.drawBetween(new Vec2(this.x, this.y), colRadius, stuckEdge.planet2.pos, stuckEdge.planet2.radius);
@@ -230,4 +277,5 @@ function Ship() {
   this.render = render;
   this.testPlanetCollision = testPlanetCollision;
   this.testEdgeCollision = testEdgeCollision;
+  this.testSpiderCollision = testSpiderCollision;
 }

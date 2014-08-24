@@ -19,6 +19,11 @@ function convert(uri) {
     return new Buffer(arr);
 }
 
+var spiderImage1 = new Image();
+spiderImage1.src = "../img/spider1.png";
+
+var spiderImage2 = new Image();
+spiderImage2.src = "../img/spider2.png";
 
 var frames = [];
 
@@ -36,13 +41,6 @@ var stars = [];
 for(var i = 0; i < 100; i++) {
 	stars.push(new Vec2(Math.round(Math.random() * 2000 - 1000), Math.round(Math.random() * 2000 - 1000)));
 }
-
-spiders.push(new Spider(10, 10));
-spiders.push(new Spider(10, 10));
-spiders.push(new Spider(10, 10));
-spiders.push(new Spider(10, 10));
-spiders.push(new Spider(10, 10));
-
 
 var canvas = document.getElementById('gameCanvas');
 var context = canvas.getContext('2d');
@@ -83,7 +81,9 @@ var frameIndex = 0;
 
 var nextPlanetAddTime = Date.now() + 1000;
 var nextEdgeAddTime = Date.now() + 1000;
-newPlanetRequired = false;
+var newPlanetRequired = false;
+var newSpiderRequired = false;
+
 
 function addEdge(planet1, planet2) {
 	if(planet1 != planet2) {
@@ -95,7 +95,7 @@ function addEdge(planet1, planet2) {
 		planet1.healthyEdges += 1;
 		planet2.healthyEdges += 1;
 		
-		if(planets.length < 100) {
+		if(planets.length < 100 && planet1.healthyEdges > 1 && planet2.healthyEdges > 1) {
 			newPlanetRequired = true;
 		}
 	}
@@ -135,12 +135,21 @@ function render() {
 
   var tick = dt / 1000;
 
-	if(planets.length < 20 || newPlanetRequired) {
+	if(planets.length < 5 || (newPlanetRequired && Date.now() > nextPlanetAddTime)) {
 		var newPlanet = new Planet(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
 		planets.push(newPlanet);
 		nextPlanetAddTime += Math.random() * 5000;
 
+		if(planets.length / 15 > spiders.length) {
+			newSpiderRequired = true;
+		}
+
 		newPlanetRequired = false;
+	}
+
+	if(newSpiderRequired) {
+		spiders.push(new Spider(1000, 1000, spiderImage1, spiderImage2));
+		newSpiderRequired = false;
 	}
 
 	for(var i = 0; i < planets.length; i++) {
@@ -151,13 +160,15 @@ function render() {
   	spiders[i].update(tick, planets, addEdge);
   }
 
-	ship.update(tick, input, planets, edges, addBullet);
+	ship.update(tick, input, planets, edges, addBullet, spiders);
 
 	for(var i = 0; i < bullets.length; i++) {
   	bullets[i].update(tick, edges);
   }
 
 	canvas.width = canvas.width;
+
+	// context.imageSmoothingEnabled= false;
   
   
 	context.fillStyle=grd;

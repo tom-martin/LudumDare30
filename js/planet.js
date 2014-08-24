@@ -11,7 +11,7 @@ function Planet(startX, startY) {
 
   var maxSpeed = 500;
 
-  var hadAnEdge = false;
+  this.hadAnEdge = false;
 
   this.radius = 10 + (Math.random() * 40);
   var origin = new Vec2(0, 0);
@@ -61,9 +61,9 @@ function Planet(startX, startY) {
     var diff = new Vec2(this.pos).sub(centerX, centerY);
     var distance = diff.mag() + 0.1;
     if(this.healthyEdges > 0) {
-      hadAnEdge = true;
+      this.hadAnEdge = true;
     }
-    if(this.healthyEdges > 0 || !hadAnEdge) {
+    if(this.healthyEdges > 0 || !this.hadAnEdge) {
       this.disp.x -= (diff.x / distance) * ((distance * distance) / k2);
       this.disp.y -= (diff.y / distance) * ((distance * distance) / k2);
     }
@@ -76,8 +76,8 @@ function Planet(startX, startY) {
 
     this.pos.add(this.disp.x * tick, this.disp.y * tick);
 
-    if(Math.abs(this.pos.distSq(origin)) > 9000000) {
-      hadAnEdge = false;
+    if(Math.abs(this.pos.distSq(origin)) > 4000000) {
+      this.hadAnEdge = false;
       this.healthyEdges = 0;
       this.pos.set(startX, startY);
 

@@ -1,13 +1,17 @@
-function Spider(startX, startY) {
+function Spider(startX, startY, img1, img2) {
   this.pos = new Vec2(startX, startY);
   this.disp = new Vec2(0, 0);
 
   var targetPlanet = null;
   var prevPlanet = null;
-  var speed = 600;
+  var speed = 500;
   var colRadius = 25;
+  this.radius = colRadius;
 
   var dummyEdge = new Edge();
+
+  var rotation = 0;
+  var rotationSpeed = 6;
 
   function testPlanetCollision(planet, tick) {
     if(!( this.pos.x + colRadius < planet.pos.x - planet.radius ||
@@ -29,7 +33,7 @@ function Spider(startX, startY) {
     if(targetPlanet == null) {
       if(planets.length > 0) {
         var randPlanet = planets[Math.floor(Math.random() * planets.length)];
-        if(randPlanet != prevPlanet) { 
+        if(randPlanet != prevPlanet && (!randPlanet.hadAnEdge || randPlanet.healthyEdges > 0)) { 
           targetPlanet = planets[Math.floor(Math.random() * planets.length)];
         }
       }
@@ -49,6 +53,19 @@ function Spider(startX, startY) {
       }
     }
 
+    if(targetPlanet != null && targetPlanet.hadAnEdge && targetPlanet.healthyEdges <= 0) {
+        targetPlanet = null;
+    }
+
+    if(prevPlanet != null && prevPlanet.hadAnEdge && prevPlanet.healthyEdges <= 0) {
+        prevPlanet = null;
+    }
+
+    
+    var targetRotation = Math.atan2(this.disp.y, this.disp.x)-(Math.PI/2);
+    rotation += Math.max(-tick*rotationSpeed, Math.min(tick*rotationSpeed, targetRotation - rotation));
+    
+
     this.pos.add(this.disp.x * tick * speed, this.disp.y * tick * speed);
   }
 
@@ -57,14 +74,21 @@ function Spider(startX, startY) {
       dummyEdge.drawBetween(this.pos, colRadius, prevPlanet.pos, prevPlanet.radius);
     }
 
-    context.fillStyle="#000000";
-    context.strokeStyle="#FFFFFF";
+    // context.fillStyle="#000000";
+    // context.strokeStyle="#FFFFFF";
     context.translate(this.pos.x, this.pos.y);
-    context.fillRect(-25,-25,50,50);
-    context.beginPath();
-    context.moveTo(0, 0);
-    context.rect(-25,-25,50,50);
-    context.stroke();
+    context.rotate(rotation);
+    // context.fillRect(-25,-25,50,50);
+    // context.beginPath();
+    // context.moveTo(0, 0);
+    // context.rect(-25,-25,50,50);
+    // context.stroke();
+    var img = img1;
+    if((Date.now()) % 600 > 300) {
+      img = img2;
+    }
+    context.drawImage(img, -img.width / 2, -img.height / 2);
+    context.rotate(-rotation);
     context.translate(-this.pos.x, -this.pos.y);
   }
 
