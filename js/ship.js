@@ -1,6 +1,5 @@
 function Ship(playShootSound) {
   var rotationSpeed = 10;
-  var momentumSpeed = 2500;
 
   var speed = 500;
 
@@ -107,7 +106,7 @@ function Ship(playShootSound) {
     var recentlyDead = (now - this.deadTime < 6000);
     var stillDying = (now - this.deadTime < 3000);
 
-    if(ship.lives > 0 || stillDying) {
+    if(this.lives > 0 || stillDying) {
 
       edgeColliding = false;
       if(!recentlyDead) {
@@ -242,7 +241,7 @@ function Ship(playShootSound) {
         }
       }
 
-      var fireFreq = maxFireFreq / Math.min(5, spiders.length);
+      var fireFreq = maxFireFreq / Math.min(4, spiders.length);
       if(!this.stuck && !recentlyDead && input.spacedown && now - lastFireTime > fireFreq) {
         var m = new Vec2(0, -1).rotate(this.rotation);
         addBullet(new Bullet(this.x, this.y, m));
@@ -286,8 +285,8 @@ function Ship(playShootSound) {
     }
 
     if(stuckEdge != null) {
-      stuckEdge.drawBetween(new Vec2(this.x, this.y), colRadius, stuckEdge.planet1.pos, stuckEdge.planet1.radius);
-      stuckEdge.drawBetween(new Vec2(this.x, this.y), colRadius, stuckEdge.planet2.pos, stuckEdge.planet2.radius);
+      stuckEdge.drawBetween(context, new Vec2(this.x, this.y), colRadius, stuckEdge.planet1.pos, stuckEdge.planet1.radius);
+      stuckEdge.drawBetween(context, new Vec2(this.x, this.y), colRadius, stuckEdge.planet2.pos, stuckEdge.planet2.radius);
     }
     
     context.fillStyle="#FFFF88";

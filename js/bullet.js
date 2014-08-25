@@ -31,7 +31,7 @@ function Bullet(startX, startY, movementVec) {
     return dist_v.mag() < colRadius * 5;
   }
 
-  function update(tick, edges) {
+  function update(tick, edges, removeEdge) {
     if(this.active) {
       this.pos.add(movementVec.x * tick * speed, movementVec.y * tick * speed);
 
@@ -42,8 +42,7 @@ function Bullet(startX, startY, movementVec) {
             edge.health -= 2;
 
             if(edge.health <= 0) {
-              edge.planet1.healthyEdges -= 1;
-              edge.planet2.healthyEdges -= 1;
+              removeEdge(edge);
             }
             this.active = false;
             break;

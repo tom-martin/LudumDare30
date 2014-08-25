@@ -2,7 +2,8 @@
 	"name": "simple-text-editor",
 	"main": "./html/index.html",
 	"window": {
-		"fullscreen": true
+		"fullscreen": true,
+		"toolbar": false
 	}
 }
 

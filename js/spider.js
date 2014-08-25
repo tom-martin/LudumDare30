@@ -13,6 +13,9 @@ function Spider(startX, startY, img1, img2) {
   var rotation = 0;
   var rotationSpeed = 6;
 
+  var berserkerMode = true;
+  var lastBerserkerTime = -1;
+
   function testPlanetCollision(planet, tick) {
     if(!( this.pos.x + colRadius < planet.pos.x - planet.radius ||
             this.pos.x - colRadius > planet.pos.x + planet.radius ||
@@ -27,14 +30,19 @@ function Spider(startX, startY, img1, img2) {
     return false;
   }
 
-  function update(tick, planets, addEdge) {
+  function update(tick, ship, planets, addEdge, healthyEdgeCount) {
     this.disp.set(0, 0);
+    var now = Date.now();
 
     if(targetPlanet == null) {
       if(planets.length > 0) {
-        var randPlanet = planets[Math.floor(Math.random() * planets.length)];
-        if(randPlanet != prevPlanet && (!randPlanet.hadAnEdge || randPlanet.healthyEdges > 0)) { 
-          targetPlanet = planets[Math.floor(Math.random() * planets.length)];
+        if(healthyEdgeCount <= 100) {
+          var randPlanet = planets[Math.floor(Math.random() * planets.length)];
+          if(randPlanet != prevPlanet && (!randPlanet.hadAnEdge || randPlanet.healthyEdges > 0)) { 
+            targetPlanet = planets[Math.floor(Math.random() * planets.length)];
+          }
+        } else {
+          berserkerMode = true;
         }
       }
     } else {
@@ -61,7 +69,20 @@ function Spider(startX, startY, img1, img2) {
         prevPlanet = null;
     }
 
+
     var adjSpeed = speed;
+
+    if(this.pos.distSq(ship.pos) < 40000 && (now - lastBerserkerTime > 5000)) {
+      berserkerMode = true;
+    }
+
+    if(Math.random() < 0.002) {
+        berserkerMode = true;
+      }
+
+    if(ship.dead) {
+      berserkerMode = false;
+    }
 
     if(ship.stuck && !ship.dead) {
       this.disp.set(ship.x, ship.y);
@@ -70,6 +91,20 @@ function Spider(startX, startY, img1, img2) {
       this.disp.norm();
 
       adjSpeed *= (Math.min(300, dist) / 300);
+    } else if(berserkerMode) {
+      lastBerserkerTime = Date.now();
+      prevPlanet = null;
+      targetPlanet = null;
+
+      this.disp.set(ship.x, ship.y);
+      this.disp.sub(this.pos);
+      var dist = Math.abs(this.disp.mag());
+      this.disp.norm();
+      adjSpeed = 450;
+
+      if(Math.random() < 0.01) {
+        berserkerMode = false;
+      }
     }
 
     
@@ -81,8 +116,8 @@ function Spider(startX, startY, img1, img2) {
   }
 
   function render(context) {
-    if(prevPlanet != null) {
-      dummyEdge.drawBetween(this.pos, colRadius, prevPlanet.pos, prevPlanet.radius);
+    if(prevPlanet != null && Date.now() % 500 < 250) {
+      dummyEdge.drawBetween(context, this.pos, colRadius, prevPlanet.pos, prevPlanet.radius);
     }
 
     // context.fillStyle="#000000";

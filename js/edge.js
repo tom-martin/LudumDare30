@@ -2,7 +2,7 @@ function Edge(planet1, planet2) {
   var deathStartTime = -1;
   var shardSpeed = 100;
 
-  function update(tick, playEdgeDeadSound) {
+  function update(tick, playEdgeDeadSound, healthyEdgeCount, removeEdge) {
     var now = Date.now();
     if(this.health <= 0 && deathStartTime < 0) {
       playEdgeDeadSound();
@@ -21,6 +21,14 @@ function Edge(planet1, planet2) {
         deathShardLocs[i].y += deathShardVels[i].y * tick;
       }
     }
+
+    if(this.health > 0 && healthyEdgeCount >= 100) {
+      this.health = 0;
+      removeEdge(this);
+      this.planet1.hadAnEdge = false;
+      this.planet2.hadAnEdge = false;
+      deathStartTime = 1;
+    }
     
   }
 
@@ -34,7 +42,7 @@ function Edge(planet1, planet2) {
 
   this.health = 2 + Math.round(Math.random() * 8);
 
-  function drawBetween(a, aRadius, b, bRadius) {
+  function drawBetween(context, a, aRadius, b, bRadius) {
     var diff = new Vec2(a).sub(b);
     var l = 255 - Math.min(255, Math.abs(diff.mag() / 6));
     var ci = Math.floor(l).toString(16);
@@ -60,7 +68,7 @@ function Edge(planet1, planet2) {
 
   function render(context) {
     if(this.health > 0) {
-      this.drawBetween(planet1.pos, planet1.radius, planet2.pos, planet2.radius);
+      this.drawBetween(context, planet1.pos, planet1.radius, planet2.pos, planet2.radius);
     } else if(deathStartTime > 0 && Date.now() - deathStartTime < 1000) {
       context.fillStyle="#FFFFFF";
       for(var i = 0; i < deathShardLocs.length; i++) {
