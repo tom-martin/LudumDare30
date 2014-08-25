@@ -1,9 +1,10 @@
 {
-	"name": "simple-text-editor",
+	"name": "galactic-pest-control",
 	"main": "./html/index.html",
 	"window": {
-		"fullscreen": true,
-		"toolbar": false
+		"width": 1024,
+    	"height": 800,
+    	"toolbar": false
 	}
 }
 
