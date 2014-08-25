@@ -102,6 +102,7 @@ function Game() {
 	var frames = [];
 
 	var ship = new Ship(playShootSound);
+	var powerUp = new PowerUp();
 	var planets = [];
 	var edges = [];
 	var spiders = [];
@@ -253,7 +254,7 @@ function Game() {
 	  if(started) {
 
 			if(planets.length < 7 || (newPlanetRequired && Date.now() > nextPlanetAddTime)) {
-				var newPlanet = new Planet(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
+				var newPlanet = new Planet((Math.random() * 1000) - 500, (Math.random() * 1000) - 500);
 				planets.push(newPlanet);
 				nextPlanetAddTime += Math.random() * 5000;
 
@@ -277,7 +278,7 @@ function Game() {
 		  	spiders[i].update(tick, ship, planets, addEdge, healthyEdgeCount);
 		  }
 
-			ship.update(tick, input, planets, edges, addBullet, spiders, playShipDeadSound);
+			ship.update(tick, input, planets, edges, addBullet, spiders, playShipDeadSound, powerUp);
 
 			for(var i = 0; i < bullets.length; i++) {
 		  	bullets[i].update(tick, edges, removeEdge);
@@ -286,6 +287,7 @@ function Game() {
 		  for(var i = 0; i < edges.length; i++) {
 		  	edges[i].update(tick, playEdgeDeadSound, healthyEdgeCount, removeEdge);
 		  }
+		  powerUp.update(tick, ship, spiders);
 		}
 
 		canvas.width = canvas.width;
@@ -318,6 +320,8 @@ function Game() {
 		  for(var i = 0; i < planets.length; i++) {
 		  	planets[i].render(context);
 		  }
+
+		  powerUp.render(context);
 
 		  for(var i = 0; i < bullets.length; i++) {
 		  	bullets[i].render(context);

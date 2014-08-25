@@ -101,7 +101,7 @@ function Ship(playShootSound) {
   }
 
 
-  function update(tick, input, planets, edges, addBullet, spiders, playShipDeadSound) {
+  function update(tick, input, planets, edges, addBullet, spiders, playShipDeadSound, powerUp) {
     var now = Date.now();
     var recentlyDead = (now - this.deadTime < 6000);
     var stillDying = (now - this.deadTime < 3000);
@@ -241,7 +241,7 @@ function Ship(playShootSound) {
         }
       }
 
-      var fireFreq = maxFireFreq / Math.min(4, spiders.length);
+      var fireFreq = maxFireFreq / Math.min(4, powerUp.caughtCount);
       if(!this.stuck && !recentlyDead && input.spacedown && now - lastFireTime > fireFreq) {
         var m = new Vec2(0, -1).rotate(this.rotation);
         addBullet(new Bullet(this.x, this.y, m));

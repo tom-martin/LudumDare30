@@ -102,7 +102,7 @@ function Planet(startX, startY) {
 
     this.pos.add(this.disp.x * tick, this.disp.y * tick);
 
-    if(Math.abs(this.pos.distSq(origin)) > 3000000) {
+    if(this.hadAnEdge && Math.abs(this.pos.distSq(origin)) > 3000000) {
       upScore(this.radius, name);
       this.hadAnEdge = false;
       this.healthyEdges = 0;
