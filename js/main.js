@@ -125,12 +125,12 @@ function Game() {
 	var canvas = document.getElementById('gameCanvas');
 	var context = canvas.getContext('2d');
 
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;	
+	canvas.width = Math.min(1024, window.innerWidth);
+	canvas.height = Math.min(800, window.innerHeight);	
 
 	window.onresize=function(){
-		canvas.width = window.innerWidth;
-		canvas.height = window.innerHeight;	
+		canvas.width = Math.min(1024, window.innerWidth);
+		canvas.height = Math.min(800, window.innerHeight);	
 	};
 
 	var startCap = false;
